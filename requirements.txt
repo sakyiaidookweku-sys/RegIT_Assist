@@ -5,3 +5,5 @@ gunicorn
 whitenoise
 
 python-decouple
+
+google-genai

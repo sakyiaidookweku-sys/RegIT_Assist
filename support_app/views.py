@@ -248,3 +248,38 @@ def export_tickets_csv(request):
         ])
 
     return response
+
+import os
+from django.conf import settings
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from google import genai
+
+@csrf_exempt
+def chatbot_api(request):
+    """
+    Endpoint that accepts POST requests containing user prompts
+    and returns generated replies from Gemini 2.5 Flash.
+    """
+    if request.method == "POST":
+        user_message = request.POST.get("message", "").strip()
+
+        if not user_message:
+            return JsonResponse({"error": "Message cannot be empty."}, status=400)
+
+        api_key = os.environ.get("GEMINI_API_KEY") or getattr(settings, "GEMINI_API_KEY", None)
+
+        if not api_key:
+            return JsonResponse({"error": "GEMINI_API_KEY is not configured."}, status=500)
+
+        try:
+            client = genai.Client(api_key=api_key)
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=user_message,
+            )
+            return JsonResponse({"reply": response.text})
+        except Exception as e:
+            return JsonResponse({"error": f"API call failed: {str(e)}"}, status=500)
+
+    return JsonResponse({"error": "Invalid request method. Use POST."}, status=405)

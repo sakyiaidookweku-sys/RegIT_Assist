@@ -24,14 +24,17 @@ urlpatterns = [
     # Ticket Status Update Route
     path('ticket/<int:ticket_id>/update/', views.update_ticket_status, name='update_ticket_status'),
 
-    # New Filtered Ticket Views (Step 1)
+    # Filtered Ticket Views
     path('admin/tickets/pending/', views.admin_pending_tickets, name='admin_pending_tickets'),
     path('admin/tickets/resolved/', views.admin_resolved_tickets, name='admin_resolved_tickets'),
 
-    # Staff Management Routes (Step 2)
+    # Staff Management Routes
     path('admin/staff/manage/', views.manage_staff_view, name='manage_staff'),
     path('admin/staff/<int:user_id>/toggle/', views.toggle_user_status, name='toggle_user_status'),
 
     # CSV Export Route
     path('admin/tickets/export/', views.export_tickets_csv, name='export_tickets_csv'),
+
+    # Gemini AI Chatbot API Endpoint
+    path('api/chat/', views.chatbot_api, name='chatbot_api'),
 ]
