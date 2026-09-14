@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RegIT Assist - Staff Support AI</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-body: #f8fafc;
+            --bg-container: #ffffff;
+            --text-main: #334155;
+            --text-heading: #0284c7;
+            --border-color: #e2e8f0;
+            --input-bg: #ffffff;
+            --input-text: #0f172a;
+            --chat-box-bg: #f8fafc;
+            --bot-msg-bg: #e0f2fe;
+            --bot-msg-text: #0369a1;
+            --chip-bg: #ffffff;
+            --chip-border: #0284c7;
+            --chip-text: #0284c7;
+            --predictive-bg: #f1f5f9;
+            --predictive-text: #475569;
+            --attach-bg: #f1f5f9;
+            --attach-text: #475569;
+            --drawer-bg: #ffffff;
+            --recent-item-bg: #f8fafc;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #0f172a;
+            --bg-container: #1e293b;
+            --text-main: #e2e8f0;
+            --text-heading: #38bdf8;
+            --border-color: #334155;
+            --input-bg: #0f172a;
+            --input-text: #f8fafc;
+            --chat-box-bg: #0f172a;
+            --bot-msg-bg: #334155;
+            --bot-msg-text: #38bdf8;
+            --chip-bg: #1e293b;
+            --chip-border: #38bdf8;
+            --chip-text: #38bdf8;
+            --predictive-bg: #334155;
+            --predictive-text: #cbd5e1;
+            --attach-bg: #334155;
+            --attach-text: #cbd5e1;
+            --drawer-bg: #1e293b;
+            --recent-item-bg: #334155;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        .mobile-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--bg-container);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: 92vh;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+            transition: background 0.3s ease;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .menu-toggle-btn, .theme-toggle-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-heading);
+            font-size: 14px;
+            padding: 5px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .header h2 {
+            color: var(--text-heading);
+            margin: 0;
+            font-size: 16px;
+        }
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            padding: 5px 8px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        /* Slide-out Menu Drawer Styles */
+        .side-drawer {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 80%;
+            height: 100%;
+            background: var(--drawer-bg);
+            box-shadow: 4px 0 15px rgba(0,0,0,0.15);
+            z-index: 100;
+            transition: left 0.3s ease, background 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .side-drawer.open {
+            left: 0;
+        }
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 12px;
+        }
+        .drawer-header h3 {
+            color: var(--text-heading);
+            margin: 0;
+            font-size: 16px;
+        }
+        .close-drawer {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+        
+        /* Recent Consolidated Conversations Section in Menu Bar */
+        .recent-chats-section {
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            display: none;
+        }
+        .recent-chats-section.active {
+            display: block;
+        }
+        .section-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--text-main);
+            opacity: 0.7;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        .recent-chat-item {
+            background: var(--recent-item-bg);
+            border: 1px solid var(--border-color);
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-main);
+            cursor: pointer;
+            margin-bottom: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .recent-chat-item:hover {
+            border-color: var(--text-heading);
+            color: var(--text-heading);
+        }
+
+        /* Action Links Below */
+        .drawer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-grow: 1;
+        }
+        .drawer-link {
+            text-decoration: none;
+            color: var(--text-main);
+            font-size: 13px;
+            font-weight: bold;
+            padding: 8px 10px;
+            border-radius: 6px;
+            background: var(--recent-item-bg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            text-align: left;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .drawer-link:hover {
+            color: var(--text-heading);
+        }
+        .drawer-footer {
+            font-size: 11px;
+            color: var(--text-main);
+            opacity: 0.6;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 99;
+            display: none;
+        }
+        .overlay.active {
+            display: block;
+        }
+
+        /* Chat Box Styles */
+        .chat-box {
+            flex-grow: 1;
+            background: var(--chat-box-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 10px;
+            transition: background 0.3s ease;
+        }
+        .message {
+            max-width: 85%;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .bot-message {
+            background: var(--bot-msg-bg);
+            color: var(--bot-msg-text);
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+        .user-message {
+            background: #0284c7;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+        .chat-image {
+            max-width: 100%;
+            border-radius: 6px;
+            margin-top: 6px;
+            display: block;
+        }
+        .chat-chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+        }
+        .chat-chip {
+            background: var(--chip-bg);
+            border: 1px solid var(--chip-border);
+            color: var(--chip-text);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .chat-chip:hover {
+            opacity: 0.8;
+        }
+        .predictive-bar {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            margin-bottom: 6px;
+            min-height: 24px;
+        }
+        .predictive-chip {
+            background: var(--predictive-bg);
+            border: 1px solid var(--border-color);
+            color: var(--predictive-text);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            white-space: nowrap;
+            cursor: pointer;
+            display: none;
+        }
+        .predictive-chip.active {
+            display: inline-block;
+        }
+        
+        /* Input & Attachment Styles */
+        .chat-input-area {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .chat-input-area input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--input-bg);
+            color: var(--input-text);
+            font-size: 12px;
+            box-sizing: border-box;
+            outline: none;
+        }
+        .attach-btn {
+            background: var(--attach-bg);
+            border: 1px solid var(--border-color);
+            color: var(--attach-text);
+            padding: 7px 11px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .send-btn {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 9px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* Profile Modal / Overlay Styles */
+        .profile-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-container);
+            z-index: 110;
+            display: none;
+            flex-direction: column;
+            box-sizing: border-box;
+            padding: 20px;
+            overflow-y: auto;
+            transition: background 0.3s ease;
+        }
+        .profile-modal.open {
+            display: flex;
+        }
+        .profile-form-group {
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .profile-form-group label {
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+        .profile-form-group input, .profile-form-group select {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--input-bg);
+            color: var(--input-text);
+            font-size: 12px;
+            outline: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .profile-form-group select option {
+            background: var(--bg-container);
+            color: var(--text-main);
+        }
+        .save-profile-btn {
+            background: #16a34a;
+            color: white;
+            border: none;
+            padding: 9px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+<div class="mobile-container">
+    <!-- Overlay for Drawer -->
+    <div class="overlay" id="drawerOverlay" onclick="toggleMenu()"></div>
+
+    <!-- Staff Profile Settings Modal / View -->
+    <div class="profile-modal" id="profileModal">
+        <div class="drawer-header">
+            <h3>⚙️ Staff Profile Settings</h3>
+            <button class="close-drawer" onclick="toggleProfileModal()">✕</button>
+        </div>
+        
+        <div class="profile-form-group">
+            <label>Full Name</label>
+            <input type="text" id="profileFullName" value="Kweku Sakyi-Aidoo">
+        </div>
+
+        <div class="profile-form-group">
+            <label>Staff ID</label>
+            <input type="text" id="profileStaffId" value="ECG/KMS/2204">
+        </div>
+
+        <div class="profile-form-group">
+            <label>ECG Corporate Email</label>
+            <input type="email" id="profileEmail" value="k.sakyi-aidoo@ecggh.com">
+        </div>
+
+        <div class="profile-form-group">
+            <label>Assigned District / Station</label>
+            <select id="profileDistrict">
+                <option value="Kumasi Central" selected>Kumasi Central District</option>
+                <option value="Kumasi East">Kumasi East District</option>
+                <option value="Kumasi West">Kumasi West District</option>
+                <option value="Subin">Subin District</option>
+                <option value="Asawase">Asawase District</option>
+                <option value="Cape Coast">Cape Coast District</option>
+            </select>
+        </div>
+
+        <div class="profile-form-group">
+            <label>Department</label>
+            <select id="profileDepartment">
+                <option value="Network" selected>Network & Systems</option>
+                <option value="Accounts">Accounts & Finance</option>
+                <option value="Commercial">Commercial Services</option>
+                <option value="Customer Care">Customer Care Desk</option>
+            </select>
+        </div>
+
+        <div class="profile-form-group">
+            <label>New Password (Optional)</label>
+            <input type="password" id="profilePassword" placeholder="Leave blank to keep current">
+        </div>
+
+        <button type="button" class="save-profile-btn" onclick="saveProfileChanges()">Save Profile Settings</button>
+    </div>
+
+    <!-- Slide-out Menu Drawer -->
+    <div class="side-drawer" id="sideDrawer">
+        <div class="drawer-header">
+            <h3>Staff Menu</h3>
+            <button class="close-drawer" onclick="toggleMenu()">✕</button>
+        </div>
+
+        <!-- Recent Consolidated Sessions Section -->
+        <div class="recent-chats-section" id="recentChatsSection">
+            <div class="section-title">🕒 Recent Topics</div>
+            <div id="recentChatsList"></div>
+        </div>
+
+        <!-- Action Links Below -->
+        <div class="drawer-links">
+            <a href="{% url 'staff_dashboard' %}" class="drawer-link"><i class="fa-solid fa-chart-pie w-5"></i> Back to Dashboard</a>
+            <a href="{% url 'report_problem' %}" class="drawer-link"><i class="fa-solid fa-triangle-exclamation"></i> Report a problem</a>
+            <button class="drawer-link" onclick="startNewChat(); toggleMenu();"><i class="fa-solid fa-plus"></i> Start new chat</button>
+            <button class="drawer-link" onclick="deleteConversation(); toggleMenu();" style="color: #ef4444; border-color: #fecaca; background: #fef2f2;"><i class="fa-solid fa-trash"></i> Clear recent topics</button>
+            <button class="drawer-link" onclick="toggleMenu(); toggleProfileModal();"><i class="fa-solid fa-user"></i> Staff profile settings</button>
+        </div>
+        
+        <div class="drawer-footer">
+            RegIT Assist v1.0
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <button class="menu-toggle-btn" onclick="toggleMenu()">☰</button>
+            <div>
+                <h2>RegIT Assistant</h2>
+                <p style="font-size: 10px; color: var(--text-main); opacity: 0.7; margin: 0;">AI Software & Hardware Support</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Dark/Light Mode">🌙</button>
+            <a href="{% url 'login' %}" class="logout-btn">Log Out</a>
+        </div>
+    </div>
+
+    <!-- Chat Messages Window -->
+    <div class="chat-box" id="chatBox">
+        <div class="message bot-message" id="welcomeMessage">
+            Hello! I am your RegIT Assistant. How can I help you today with software, network issues, or printer connectivity?
+            
+            <div class="chat-chips-container" id="welcomeChips">
+                <button class="chat-chip" onclick="sendQuickPrompt('Printer not connecting')">🖨️ Printer Issue</button>
+                <button class="chat-chip" onclick="sendQuickPrompt('Software installation error')">💻 Software Error</button>
+                <button class="chat-chip" onclick="sendQuickPrompt('Wi-Fi or network issue')">🌐 Wi-Fi / Network</button>
+                <button class="chat-chip" onclick="sendQuickPrompt('Email configuration help')">📧 Email Setup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Predictive Options -->
+    <div class="predictive-bar" id="predictiveBar">
+        <span class="predictive-chip" onclick="applyPrediction('Printer offline error')">🖨️ Printer offline</span>
+        <span class="predictive-chip" onclick="applyPrediction('Printer driver update')">🖨️ Driver update</span>
+        <span class="predictive-chip" onclick="applyPrediction('Software installation error')">💻 Install error</span>
+        <span class="predictive-chip" onclick="applyPrediction('License key expired')">💻 License expired</span>
+        <span class="predictive-chip" onclick="applyPrediction('Wi-Fi keeps disconnecting')">🌐 Wi-Fi dropping</span>
+        <span class="predictive-chip" onclick="applyPrediction('VPN connection failed')">🌐 VPN issue</span>
+        <span class="predictive-chip" onclick="applyPrediction('Outlook email sync issue')">📧 Outlook sync</span>
+    </div>
+
+    <!-- Hidden File Input for Image Uploads -->
+    <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+
+    <!-- Message Input Form -->
+    <div class="chat-input-area">
+        <button class="attach-btn" onclick="document.getElementById('imageInput').click()" title="Attach image">+</button>
+        <input type="text" id="userInput" placeholder="Ask me anything ECG related about software..." oninput="filterPredictions()" onkeypress="handleKeyPress(event)">
+        <button class="send-btn" onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    const chatBox = document.getElementById('chatBox');
+    const userInput = document.getElementById('userInput');
+    const predictiveBar = document.getElementById('predictiveBar');
+    const chips = predictiveBar.getElementsByClassName('predictive-chip');
+    const sideDrawer = document.getElementById('sideDrawer');
+    const drawerOverlay = document.getElementById('drawerOverlay');
+    const recentChatsSection = document.getElementById('recentChatsSection');
+    const recentChatsList = document.getElementById('recentChatsList');
+    const profileModal = document.getElementById('profileModal');
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+
+    let savedSessions = []; 
+    let currentSessionMessages = '';
+    let hasInitializedSession = false;
+    let attachedImageSrc = null;
+
+    // Theme Switcher Logic
+    function toggleTheme() {
+        const body = document.body;
+        const currentTheme = body.getAttribute('data-theme');
+        if (currentTheme === 'light') {
+            body.setAttribute('data-theme', 'dark');
+            themeToggleBtn.textContent = '☀️';
+            localStorage.setItem('regit_theme', 'dark');
+        } else {
+            body.setAttribute('data-theme', 'light');
+            themeToggleBtn.textContent = '🌙';
+            localStorage.setItem('regit_theme', 'light');
+        }
+    }
+
+    // Load persisted theme on page load to maintain consistency across the app
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('regit_theme') || 'light';
+        document.body.setAttribute('data-theme', savedTheme);
+        themeToggleBtn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+    });
+
+    function toggleMenu() {
+        sideDrawer.classList.toggle('open');
+        drawerOverlay.classList.toggle('active');
+    }
+
+    function toggleProfileModal() {
+        profileModal.classList.toggle('open');
+    }
+
+    function saveProfileChanges() {
+        const fullName = document.getElementById('profileFullName').value;
+        const staffId = document.getElementById('profileStaffId').value;
+        if (!fullName || !staffId) {
+            alert('Please fill out your name and staff ID.');
+            return;
+        }
+        alert('Staff profile settings updated successfully!');
+        toggleProfileModal();
+    }
+
+    function appendMessage(text, sender, imgSrc = null) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message');
+        messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+        
+        let content = text;
+        if (imgSrc) {
+            content += `<br><img src="${imgSrc}" class="chat-image" alt="Uploaded issue screenshot">`;
+        }
+        messageDiv.innerHTML = content;
+        chatBox.appendChild(messageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        currentSessionMessages = chatBox.innerHTML;
+    }
+
+    function handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                attachedImageSrc = e.target.result;
+                userInput.placeholder = "Image attached! Type a description or send...";
+                userInput.focus();
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function registerOrUpdateSession(topicTitle) {
+        if (!hasInitializedSession) {
+            savedSessions.unshift({
+                title: topicTitle,
+                htmlContent: chatBox.innerHTML
+            });
+            if (savedSessions.length > 5) savedSessions.pop();
+            hasInitializedSession = true;
+        } else {
+            if (savedSessions.length > 0) {
+                savedSessions[0].htmlContent = chatBox.innerHTML;
+            }
+        }
+        updateRecentChatsUI();
+    }
+
+    function updateRecentChatsUI() {
+        if (savedSessions.length > 0) {
+            recentChatsSection.classList.add('active');
+            recentChatsList.innerHTML = '';
+            savedSessions.forEach((session, index) => {
+                const item = document.createElement('div');
+                item.classList.add('recent-chat-item');
+                item.textContent = `💬 ${session.title}`;
+                item.onclick = () => loadSession(index);
+                recentChatsList.appendChild(item);
+            });
+        } else {
+            recentChatsSection.classList.remove('active');
+            recentChatsList.innerHTML = '';
+        }
+    }
+
+    function startNewChat() {
+        hasInitializedSession = false;
+        chatBox.innerHTML = `
+            <div class="message bot-message" id="welcomeMessage">
+                Started a new chat session! How can I assist you today?
+                <div class="chat-chips-container" id="welcomeChips">
+                    <button class="chat-chip" onclick="sendQuickPrompt('Printer not connecting')">🖨️ Printer Issue</button>
+                    <button class="chat-chip" onclick="sendQuickPrompt('Software installation error')">💻 Software Error</button>
+                    <button class="chat-chip" onclick="sendQuickPrompt('Wi-Fi or network issue')">🌐 Wi-Fi / Network</button>
+                    <button class="chat-chip" onclick="sendQuickPrompt('Email configuration help')">📧 Email Setup</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function deleteConversation() {
+        chatBox.innerHTML = `
+            <div class="message bot-message">
+                Conversation topics cleared. Type a message or select an option below to begin again.
+            </div>
+        `;
+        savedSessions = [];
+        hasInitializedSession = false;
+        updateRecentChatsUI();
+    }
+
+    function loadSession(index) {
+        toggleMenu();
+        hasInitializedSession = true;
+        const targetSession = savedSessions[index];
+        chatBox.innerHTML = targetSession.htmlContent;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function getBotResponse(input) {
+        const text = input.toLowerCase();
+        if (text.includes('printer') || text.includes('print') || text.includes('driver')) {
+            return "For printer issues: 1. Ensure you are connected to the office local network. 2. Restart the Print Spooler service or re-add the network IP printer. If it persists, escalate to an IT intern.";
+        } else if (text.includes('software') || text.includes('install') || text.includes('app') || text.includes('license')) {
+            return "For software & licensing issues: Ensure you have admin rights or contact support to authenticate. Check available storage space.";
+        } else if (text.includes('wifi') || text.includes('network') || text.includes('internet') || text.includes('vpn')) {
+            return "For network/VPN issues: Toggle your adapter or run 'ipconfig /flushdns' in your command prompt. Contact network admins if the gateway drops.";
+        } else if (text.includes('email') || text.includes('outlook')) {
+            return "For Outlook email syncing: Verify your credentials, check server settings, or clear your cached Exchange credentials.";
+        } else {
+            return "I've noted your request. If you need hands-on technical assistance, remember you can submit an official ticket via the 'Report a problem' option in the side menu!";
+        }
+    }
+
+    function sendMessage() {
+        const text = userInput.value.trim();
+        if (text === '' && !attachedImageSrc) return;
+
+        const displayText = text !== '' ? text : "Uploaded problem screenshot";
+        const topicLabel = text.length > 28 ? text.substring(0, 28) + '...' : displayText;
+
+        appendMessage(displayText, 'user', attachedImageSrc);
+        registerOrUpdateSession(topicLabel);
+        
+        userInput.value = '';
+        userInput.placeholder = "Ask me anything ECG related about software...";
+        attachedImageSrc = null;
+        document.getElementById('imageInput').value = '';
+        filterPredictions();
+
+        setTimeout(() => {
+            const reply = getBotResponse(displayText);
+            appendMessage(reply, 'bot');
+            registerOrUpdateSession(topicLabel);
+        }, 500);
+    }
+
+    function sendQuickPrompt(promptText) {
+        userInput.value = promptText;
+        sendMessage();
+    }
+
+    function applyPrediction(text) {
+        userInput.value = text;
+        filterPredictions();
+        userInput.focus();
+    }
+
+    function filterPredictions() {
+        const query = userInput.value.toLowerCase().trim();
+        
+        for (let chip of chips) {
+            const chipText = chip.textContent.toLowerCase();
+            if (query.length > 0 && (chipText.includes(query) || query.split('').some(char => chipText.includes(char)))) {
+                chip.classList.add('active');
+            } else {
+                chip.classList.remove('active');
+            }
+        }
+        
+        if (query.length === 0) {
+            for (let chip of chips) {
+                chip.classList.remove('active');
+            }
+        }
+    }
+
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    }
+</script>
+
+</body>
+</html>

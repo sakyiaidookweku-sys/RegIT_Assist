@@ -1,0 +1,704 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RegIT Assist - Admin Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+   <script src="{% static 'support_app/js/tailwindcss.js' %}"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<style>
+    /* Emergency Fallback Styles to restore layout if CDN is blocked */
+    body { font-family: system-ui, -apple-system, sans-serif; background-color: #f9fafb; color: #111827; margin: 0; }
+    .flex { display: flex; }
+    .h-screen { height: 100vh; }
+    .overflow-hidden { overflow: hidden; }
+    .overflow-y-auto { overflow-y: auto; }
+    .flex-1 { flex: 1 1 0%; }
+    .flex-col { flex-direction: column; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .bg-slate-900 { background-color: #0f172a; color: white; }
+    .w-64 { width: 16rem; }
+    .p-6 { padding: 1.5rem; }
+    .bg-white { background-color: white; }
+    .border-b { border-bottom: 1px solid #e5e7eb; }
+    .shadow { box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    th { background-color: #f3f4f6; font-weight: 600; font-size: 0.875rem; }
+</style>
+<body class="bg-gray-50 font-sans text-gray-900 antialiased">
+
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- Sidebar Backdrop for Mobile -->
+        <div id="sidebar-backdrop" class="fixed inset-0 bg-black/50 z-20 hidden md:hidden"></div>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-64 bg-slate-900 text-white transform -translate-x-full md:translate-x-0 md:static md:inset-auto transition-transform duration-300 ease-in-out flex flex-col justify-between">
+            <div>
+                <!-- Brand / Logo -->
+                <div class="flex items-center justify-between px-6 py-5 border-b border-slate-800">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-blue-600 p-2 rounded-lg text-white">
+                            <i class="fa-solid fa-headset text-xl"></i>
+                        </div>
+                        <span class="text-xl font-bold tracking-wide">RegIT Assist</span>
+                    </div>
+                    <!-- Close button for mobile -->
+                    <button id="sidebar-close" class="md:hidden text-gray-400 hover:text-white">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="mt-6 px-4 space-y-1">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-600 text-white font-medium transition-colors">
+                        <i class="fa-solid fa-chart-pie w-5"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button onclick="switchTab('tickets')" id="nav-tickets" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-slate-800 hover:text-white transition-colors">
+                        <i class="fa-solid fa-ticket w-5"></i>
+                        <span>All Tickets</span>
+                    </button>
+                    <button onclick="switchTab('staff')" id="nav-staff" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-slate-800 hover:text-white transition-colors">
+                        <i class="fa-solid fa-users w-5"></i>
+                        <span>Staff Management</span>
+                    </button>
+                    <button onclick="switchTab('logs')" id="nav-logs" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-slate-800 hover:text-white transition-colors">
+                        <i class="fa-solid fa-chart-line w-5"></i>
+                        <span>System Logs</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- User Profile Footer with Functional Logout -->
+            <div class="p-4 border-t border-slate-800 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center font-bold text-white">
+                        KS
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold">Kweku Sakyi</p>
+                        <p class="text-xs text-gray-400">Regional Admin</p>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" class="text-gray-400 hover:text-red-400 transition-colors cursor-pointer p-2" title="Logout">
+                    <i class="fa-solid fa-right-from-bracket text-lg"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+
+            <!-- Top Header -->
+            <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-10">
+                <div class="flex items-center space-x-4">
+                    <button id="sidebar-toggle" class="md:hidden text-gray-600 hover:text-gray-900 focus:outline-none">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                    <h1 id="header-title" class="text-xl font-bold text-gray-800">Admin Control Center</h1>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <!-- CSV Export Button -->
+                    <a href="{% url 'export_tickets_csv' %}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2">
+                        <i class="fa-solid fa-download"></i>
+                        <span class="hidden sm:inline">Export CSV</span>
+                    </a>
+
+                    <!-- Add User Button (Triggers Modal) -->
+                    <button onclick="openModal('addUserModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span class="hidden sm:inline">Add Staff Account</span>
+                    </button>
+                </div>
+            </header>
+            <!-- Dashboard Scrollable Body (Views Container) -->
+            <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
+
+                <!-- VIEW 1: Dashboard Overview -->
+                <div id="view-dashboard" class="space-y-6 tab-view">
+                    <!-- Quick Stats Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Total Tickets</p>
+                                    <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ tickets|length }}</h3>
+                                </div>
+                                <div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
+                                    <i class="fa-solid fa-ticket text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Pending / Open</p>
+                                    <h3 class="text-2xl font-bold text-amber-600 mt-1">{{ pending_count }}</h3>
+                                </div>
+                                <div class="p-3 bg-amber-50 text-amber-600 rounded-lg">
+                                    <i class="fa-solid fa-clock text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Resolved</p>
+                                    <h3 class="text-2xl font-bold text-emerald-600 mt-1">{{ resolved_count }}</h3>
+                                </div>
+                                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+                                    <i class="fa-solid fa-circle-check text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Active Staff</p>
+                                    <h3 class="text-2xl font-bold text-indigo-600 mt-1">{{ staff_count }}</h3>
+                                </div>
+                                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg">
+                                    <i class="fa-solid fa-users-gear text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Tickets Table Card -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <h3 class="font-bold text-gray-800">Recent District IT Tickets</h3>
+                            <span class="text-xs text-gray-500">Click any row to view full audit trail</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <!-- Search and Filter Form -->
+<form method="GET" action="{% url 'admin_dashboard' %}" class="mb-4 flex flex-wrap gap-3 items-center">
+    <input 
+        type="text" 
+        name="q" 
+        value="{{ search_query }}" 
+        placeholder="Search by title, staff ID, name..." 
+        class="border rounded px-3 py-2 flex-grow min-w-[200px]"
+    >
+    
+    <select name="priority" class="border rounded px-3 py-2">
+        <option value="">All Priorities</option>
+        <option value="Low" {% if priority_filter == 'Low' %}selected{% endif %}>Low</option>
+        <option value="Medium" {% if priority_filter == 'Medium' %}selected{% endif %}>Medium</option>
+        <option value="High" {% if priority_filter == 'High' %}selected{% endif %}>High</option>
+    </select>
+    
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Filter</button>
+    
+    {% if search_query or priority_filter %}
+        <a href="{% url 'admin_dashboard' %}" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">Reset</a>
+    {% endif %}
+</form>
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 text-gray-500 text-xs uppercase font-semibold border-b border-gray-200">
+                                        <th class="px-6 py-3">Ticket ID</th>
+                                        <th class="px-6 py-3">Department / Station</th>
+                                        <th class="px-6 py-3">Issue Summary</th>
+                                        <th class="px-6 py-3">Status</th>
+                                        <th class="px-6 py-3">Priority</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 text-sm">
+                                    {% for ticket in tickets %}
+                                    <tr onclick="openTicketDetails('REG-{{ ticket.id }}', '{{ ticket.department }}', '{{ ticket.description|escapejs }}', '{{ ticket.status }}', 'Unassigned')" class="hover:bg-blue-50/50 cursor-pointer transition-colors">
+                                        <td class="px-6 py-4 font-medium text-blue-600">#REG-{{ ticket.id }}</td>
+                                        <td class="px-6 py-4 text-gray-700">{{ ticket.department }}</td>
+                                        <td class="px-6 py-4 text-gray-600">{{ ticket.title }}</td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold 
+                                                {% if ticket.status == 'Resolved' %} bg-emerald-100 text-emerald-800 
+                                                {% elif ticket.status == 'In Progress' %} bg-amber-100 text-amber-800 
+                                                {% else %} bg-red-100 text-red-800 {% endif %}">
+                                                {{ ticket.status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-gray-600">{{ ticket.priority }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-8 text-center text-gray-400 italic">No tickets reported yet.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: All Tickets Master List with Filters -->
+                <div id="view-tickets" class="space-y-6 tab-view hidden">
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        
+                        <!-- Header & Search/Filter Controls Toolbar -->
+                        <div class="p-6 border-b border-gray-200 space-y-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                <div>
+                                    <h3 class="font-bold text-gray-800 text-lg">All District IT Tickets Master Registry</h3>
+                                    <p class="text-xs text-gray-500 mt-0.5">Comprehensive tracking and filtering of all regional support logs.</p>
+                                </div>
+                                <span class="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-medium w-max">Total Records: {{ tickets|length }}</span>
+                            </div>
+
+                            <!-- Interactive Filter & Search Bar -->
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                                <!-- Text Search Input -->
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                    </span>
+                                    <input type="text" id="ticketSearchInput" onkeyup="filterTicketsTable()" placeholder="Search ID, station, or issue..." class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50/50">
+                                </div>
+
+                                <!-- Status Filter Dropdown -->
+                                <div>
+                                    <select id="ticketStatusFilter" onchange="filterTicketsTable()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="">Filter by Status (All)</option>
+                                        <option value="Resolved">Resolved</option>
+                                        <option value="In Progress">In Progress</option>
+                                        <option value="Pending">Pending / Open</option>
+                                    </select>
+                                </div>
+
+                                <!-- Priority Filter Dropdown -->
+                                <div>
+                                    <select id="ticketPriorityFilter" onchange="filterTicketsTable()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="">Filter by Priority (All)</option>
+                                        <option value="High">High</option>
+                                        <option value="Medium">Medium</option>
+                                        <option value="Low">Low</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tickets Data Table -->
+                        <div class="overflow-x-auto">
+                            <table id="allTicketsTable" class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 text-gray-500 text-xs uppercase font-semibold border-b border-gray-200">
+                                        <th class="px-6 py-3">Ticket ID</th>
+                                        <th class="px-6 py-3">Station / Dept</th>
+                                        <th class="px-6 py-3">Subject / Issue</th>
+                                        <th class="px-6 py-3">Status</th>
+                                        <th class="px-6 py-3">Priority</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 text-sm">
+                                    {% for ticket in tickets %}
+                                    <tr onclick="openTicketDetails('REG-{{ ticket.id }}', '{{ ticket.department }}', '{{ ticket.description|escapejs }}', '{{ ticket.status }}', 'Unassigned')" class="ticket-row hover:bg-blue-50/50 cursor-pointer transition-colors" data-status="{{ ticket.status }}" data-priority="{{ ticket.priority }}">
+                                        <td class="px-6 py-4 font-medium text-blue-600 ticket-id">#REG-{{ ticket.id }}</td>
+                                        <td class="px-6 py-4 text-gray-700 font-medium ticket-dept">{{ ticket.department }}</td>
+                                        <td class="px-6 py-4 text-gray-600 ticket-title">{{ ticket.title }}</td>
+                                        <td class="px-6 py-4 ticket-status">
+                                            <span class="px-2.5 py-1 rounded-full text-xs font-semibold 
+                                                {% if ticket.status == 'Resolved' %} bg-emerald-100 text-emerald-800 
+                                                {% elif ticket.status == 'In Progress' %} bg-amber-100 text-amber-800 
+                                                {% else %} bg-red-100 text-red-800 {% endif %}">
+                                                {{ ticket.status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 ticket-priority">
+                                            <span class="text-xs font-medium text-gray-600">{{ ticket.priority }}</span>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-12 text-center text-gray-400 italic">
+                                            <i class="fa-solid fa-inbox text-3xl mb-2 text-gray-300 block"></i>
+                                            No tickets found in the database.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <!-- Empty Search State Notification (Hidden by default) -->
+                            <div id="noTicketsMatch" class="hidden py-12 text-center text-gray-400 italic text-sm">
+                                <i class="fa-solid fa-filter-circle-xmark text-2xl mb-1 block text-gray-300"></i>
+                                No tickets match your search filters.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 3: Staff Management with Filters -->
+                <div id="view-staff" class="space-y-6 tab-view hidden">
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        
+                        <!-- Header & Search/Filter Toolbar -->
+                        <div class="p-6 border-b border-gray-200 space-y-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                <div>
+                                    <h3 class="font-bold text-gray-800 text-lg">Regional IT Staff & Intern Roster</h3>
+                                    <p class="text-xs text-gray-500 mt-0.5">Manage system access, permissions, and assigned station coverage.</p>
+                                </div>
+                                <button onclick="openModal('addUserModal')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors w-max">
+                                    <i class="fa-solid fa-user-plus mr-1"></i> Add Account
+                                </button>
+                            </div>
+
+                            <!-- Interactive Filter & Search Bar for Staff -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                                <!-- Text Search Input -->
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                    </span>
+                                    <input type="text" id="staffSearchInput" onkeyup="filterStaffTable()" placeholder="Search staff name or email..." class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50/50">
+                                </div>
+
+                                <!-- Role Filter Dropdown -->
+                                <div>
+                                    <select id="staffRoleFilter" onchange="filterStaffTable()" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="">Filter by System Role (All)</option>
+                                        <option value="Regional Admin">Regional Admin</option>
+                                        <option value="IT Support Staff">IT Support Staff</option>
+                                        <option value="Attachment Intern">Attachment Intern</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Staff Data Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 text-gray-500 text-xs uppercase font-semibold border-b border-gray-200">
+                                        <th class="px-6 py-3">Staff Name</th>
+                                        <th class="px-6 py-3">Email Address</th>
+                                        <th class="px-6 py-3">System Role</th>
+                                        <th class="px-6 py-3">Assigned Station</th>
+                                        <th class="px-6 py-3">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 text-sm">
+                                    <tr class="staff-row hover:bg-gray-50 transition-colors" data-role="Regional Admin">
+                                        <td class="px-6 py-4 font-medium text-gray-900 flex items-center space-x-3">
+                                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-xs">KS</div>
+                                            <span>Kweku Sakyi</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-gray-600">k.sakyi@ecg.com.gh</td>
+                                        <td class="px-6 py-4"><span class="bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-md font-semibold">Regional Admin</span></td>
+                                        <td class="px-6 py-4 text-gray-600">Central Regional IT Office</td>
+                                        <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-semibold">Active</span></td>
+                                    </tr>
+                                    <tr class="staff-row hover:bg-gray-50 transition-colors" data-role="IT Support Staff">
+                                        <td class="px-6 py-4 font-medium text-gray-900 flex items-center space-x-3">
+                                            <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 font-bold flex items-center justify-center text-xs">KA</div>
+                                            <span>Kwame Asante</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-gray-600">k.asante@ecg.com.gh</td>
+                                        <td class="px-6 py-4"><span class="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-md font-semibold">IT Support Staff</span></td>
+                                        <td class="px-6 py-4 text-gray-600">Cape Coast District Office</td>
+                                        <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-semibold">Active</span></td>
+                                    </tr>
+                                    <tr class="staff-row hover:bg-gray-50 transition-colors" data-role="Attachment Intern">
+                                        <td class="px-6 py-4 font-medium text-gray-900 flex items-center space-x-3">
+                                            <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-xs">EA</div>
+                                            <span>Esi Ansah</span>
+                                        </td>
+                                        <td class="px-6 py-4 text-gray-600">e.ansah@ecg.com.gh</td>
+                                        <td class="px-6 py-4"><span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md font-semibold">Attachment Intern</span></td>
+                                        <td class="px-6 py-4 text-gray-600">Winneba District Station</td>
+                                        <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-semibold">Active</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <!-- Empty Search State Notification (Hidden by default) -->
+                            <div id="noStaffMatch" class="hidden py-12 text-center text-gray-400 italic text-sm">
+                                <i class="fa-solid id fa-user-slash text-2xl mb-1 block text-gray-300"></i>
+                                No staff accounts match your filters.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 4: System Logs -->
+                <div id="view-logs" class="space-y-6 tab-view hidden">
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-lg">System Audit & Security Logs</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Chronological record of database changes, ticket escalations, and auth events.</p>
+                            </div>
+                            <span class="text-xs text-gray-400"><i class="fa-solid fa-shield-halved text-emerald-600 mr-1"></i> Real-time Monitoring</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 text-gray-500 text-xs uppercase font-semibold border-b border-gray-200">
+                                        <th class="px-6 py-3">Timestamp</th>
+                                        <th class="px-6 py-3">User / Actor</th>
+                                        <th class="px-6 py-3">Action Event</th>
+                                        <th class="px-6 py-3">Target Reference</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 text-sm">
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-6 py-4 text-xs text-gray-500">Today, 03:45 PM</td>
+                                        <td class="px-6 py-4 font-medium text-gray-800">Kweku Sakyi</td>
+                                        <td class="px-6 py-4"><span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">TICKET_STATUS_UPDATED</span></td>
+                                        <td class="px-6 py-4 text-gray-600 font-mono text-xs">#REG-104 (Resolved)</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-6 py-4 text-xs text-gray-500">Today, 11:20 AM</td>
+                                        <td class="px-6 py-4 font-medium text-gray-800">Kwame Asante</td>
+                                        <td class="px-6 py-4"><span class="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded">TICKET_ASSIGNED</span></td>
+                                        <td class="px-6 py-4 text-gray-600 font-mono text-xs">#REG-107 (In Progress)</td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="px-6 py-4 text-xs text-gray-500">Yesterday, 04:10 PM</td>
+                                        <td class="px-6 py-4 font-medium text-gray-800">System Automator</td>
+                                        <td class="px-6 py-4"><span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">DATABASE_BACKUP</span></td>
+                                        <td class="px-6 py-4 text-gray-600 font-mono text-xs">Firebase RTDB Snapshot</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL 1: Add User / Staff Modal -->
+    <div id="addUserModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden transform transition-all">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+                <h3 class="font-bold text-gray-800 text-lg">Create New Staff Account</h3>
+                <button onclick="closeModal('addUserModal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Full Name</label>
+                    <input type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="e.g. Kwame Asante">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Email Address</label>
+                    <input type="email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="k.asante@ecg.com.gh">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">System Role</label>
+                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white">
+                        <option value="staff">IT Support Staff</option>
+                        <option value="admin">Regional Admin</option>
+                        <option value="intern">Attachment Intern</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Assigned District / Station</label>
+                    <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="e.g. Cape Coast Regional Office">
+                </div>
+                <div class="pt-4 flex items-center justify-end space-x-3 border-t border-gray-100">
+                    <button type="button" onclick="closeModal('addUserModal')" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">Save Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Ticket Details / Audit Trail Modal -->
+    <div id="ticketDetailsModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl max-w-lg w-full overflow-hidden transform transition-all">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+                <div class="flex items-center space-x-2">
+                    <span id="modalTicketId" class="font-bold text-blue-600 text-lg">#REG-0000</span>
+                    <span class="text-xs text-gray-400">• Audit Trail</span>
+                </div>
+                <button onclick="closeModal('ticketDetailsModal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4 text-sm">
+                <div>
+                    <p class="text-xs uppercase font-semibold text-gray-400">District Station / Department</p>
+                    <p id="modalDistrict" class="font-medium text-gray-800 text-base">Station Name</p>
+                </div>
+                <div>
+                    <p class="text-xs uppercase font-semibold text-gray-400">Reported Issue Description</p>
+                    <p id="modalIssue" class="text-gray-700 bg-gray-50 p-3 rounded-lg border border-gray-100 mt-1">Issue description goes here...</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-xs uppercase font-semibold text-gray-400">Current Status</p>
+                        <p id="modalStatus" class="font-semibold text-amber-600 mt-1">In Progress</p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase font-semibold text-gray-400">Assigned Technician</p>
+                        <p id="modalStaff" class="font-medium text-gray-800 mt-1">Staff Name</p>
+                    </div>
+                </div>
+                <div class="border-t border-gray-100 pt-3">
+                    <p class="text-xs uppercase font-semibold text-gray-400 mb-2">Activity History Log</p>
+                    <div class="space-y-2 text-xs text-gray-600">
+                        <div class="flex items-start space-x-2">
+                            <i class="fa-solid fa-circle-dot text-blue-600 mt-0.5"></i>
+                            <div>
+                                <span class="font-medium text-gray-800">Ticket Created</span> - <span class="text-gray-400">Database Entry Logged</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+                <button type="button" onclick="closeModal('ticketDetailsModal')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Controllers -->
+    <script>
+        // Mobile Sidebar Toggle Logic
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebarClose = document.getElementById('sidebar-close');
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            sidebarBackdrop.classList.toggle('hidden');
+        }
+
+        sidebarToggle.addEventListener('click', toggleSidebar);
+        sidebarClose.addEventListener('click', toggleSidebar);
+        sidebarBackdrop.addEventListener('click', toggleSidebar);
+
+        // Single-Page View Switching Logic
+        function switchTab(tabName) {
+            const views = document.querySelectorAll('.tab-view');
+            views.forEach(v => v.classList.add('hidden'));
+
+            document.getElementById('view-' + tabName).classList.remove('hidden');
+
+            const navButtons = document.querySelectorAll('nav button');
+            navButtons.forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'font-medium');
+                btn.classList.add('text-gray-400', 'hover:bg-slate-800', 'hover:text-white');
+            });
+
+            const activeBtn = document.getElementById('nav-' + tabName);
+            activeBtn.classList.remove('text-gray-400', 'hover:bg-slate-800', 'hover:text-white');
+            activeBtn.classList.add('bg-blue-600', 'text-white', 'font-medium');
+
+            const titles = {
+                'dashboard': 'Admin Control Center',
+                'tickets': 'All District IT Tickets',
+                'staff': 'Staff Management Directory',
+                'logs': 'System Logs & Security Audit'
+            };
+            document.getElementById('header-title').innerText = titles[tabName];
+
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        }
+
+        // Live Table Filtering Script for "All Tickets"
+        function filterTicketsTable() {
+            const searchInput = document.getElementById('ticketSearchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('ticketStatusFilter').value;
+            const priorityFilter = document.getElementById('ticketPriorityFilter').value;
+            
+            const rows = document.querySelectorAll('.ticket-row');
+            const noMatchMsg = document.getElementById('noTicketsMatch');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const textContent = row.innerText.toLowerCase();
+                const rowStatus = row.getAttribute('data-status');
+                const rowPriority = row.getAttribute('data-priority');
+
+                const matchesSearch = textContent.includes(searchInput);
+                const matchesStatus = !statusFilter || rowStatus === statusFilter;
+                const matchesPriority = !priorityFilter || rowPriority === priorityFilter;
+
+                if (matchesSearch && matchesStatus && matchesPriority) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            if (visibleCount === 0) {
+                noMatchMsg.classList.remove('hidden');
+            } else {
+                noMatchMsg.classList.add('hidden');
+            }
+        }
+
+        // Live Table Filtering Script for "Staff Management"
+        function filterStaffTable() {
+            const searchInput = document.getElementById('staffSearchInput').value.toLowerCase();
+            const roleFilter = document.getElementById('staffRoleFilter').value;
+            
+            const rows = document.querySelectorAll('.staff-row');
+            const noMatchMsg = document.getElementById('noStaffMatch');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const textContent = row.innerText.toLowerCase();
+                const rowRole = row.getAttribute('data-role');
+
+                const matchesSearch = textContent.includes(searchInput);
+                const matchesRole = !roleFilter || rowRole === roleFilter;
+
+                if (matchesSearch && matchesRole) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            if (visibleCount === 0) {
+                noMatchMsg.classList.remove('hidden');
+            } else {
+                noMatchMsg.classList.add('hidden');
+            }
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function openTicketDetails(id, district, issue, status, staff) {
+            document.getElementById('modalTicketId').innerText = '#' + id;
+            document.getElementById('modalDistrict').innerText = district;
+            document.getElementById('modalIssue').innerText = issue;
+            document.getElementById('modalStatus').innerText = status;
+            document.getElementById('modalStaff').innerText = staff;
+            
+            openModal('ticketDetailsModal');
+        }
+
+        function handleLogout() {
+            if (confirm("Are you sure you want to sign out?")) {
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = "{% url 'admin_login' %}"; 
+            }
+        }
+    </script>
+</body>
+</html>

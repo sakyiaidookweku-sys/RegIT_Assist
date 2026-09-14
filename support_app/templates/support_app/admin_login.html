@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RegIT Assist - Admin Portal Login</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(to bottom, #fef2f2, #f8fafc);
+            --container-bg: #ffffff;
+            --text-color: #0f172a;
+            --card-bg: #fef2f2;
+            --border-color: #fecaca;
+            --input-bg: #ffffff;
+            --input-text: #0f172a;
+            --accent-color: #dc2626;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .mobile-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--container-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            box-sizing: border-box;
+        }
+        .logo-area h2 {
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+        .login-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .input-group label {
+            font-size: 12px;
+            color: var(--text-color);
+        }
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            padding-right: 40px;
+            background: var(--input-bg);
+            color: var(--input-text);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-sign-in {
+            width: 100%;
+            padding: 10px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .back-link {
+            margin-top: 15px;
+            display: block;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="mobile-container">
+    <div class="logo-area">
+        <h2>RegIT Assist</h2>
+    </div>
+
+    <div class="login-card">
+        <h3>ADMIN PORTAL LOGIN</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="input-group">
+                <label>Admin Username</label>
+                <div class="input-wrapper">
+                    <input type="text" name="username" placeholder="Enter admin username" required>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <input type="password" name="password" id="adminPasswordField" placeholder="••••••••" required>
+                    <button type="button" class="toggle-password" onclick="toggleAdminPassword()">👁️</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-sign-in">ACCESS ADMIN PORTAL</button>
+        </form>
+    </div>
+
+    <a href="{% url 'login' %}" class="back-link">← Back to Staff Login</a>
+</div>
+
+<script>
+    function toggleAdminPassword() {
+        const pwd = document.getElementById('adminPasswordField');
+        pwd.type = pwd.type === 'password' ? 'text' : 'password';
+    }
+</script>
+</body>
+</html>

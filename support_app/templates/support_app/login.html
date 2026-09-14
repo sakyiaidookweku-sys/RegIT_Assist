@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RegIT Assist - Staff Login</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(to bottom, #e0f2fe, #f8fafc);
+            --container-bg: #ffffff;
+            --text-color: #0f172a;
+            --card-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --input-bg: #ffffff;
+            --input-text: #0f172a;
+            --accent-color: #0284c7;
+        }
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(to bottom, #0f172a, #1e293b);
+            --container-bg: #1e293b;
+            --text-color: #f8fafc;
+            --card-bg: #0f172a;
+            --border-color: #334155;
+            --input-bg: #0f172a;
+            --input-text: #f8fafc;
+            --accent-color: #38bdf8;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        .mobile-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--container-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-align: center;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .logo-area h2 {
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            margin-top: 10px;
+        }
+        .login-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .input-group label {
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            padding-right: 40px;
+            background: var(--input-bg);
+            color: var(--input-text);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        .btn-sign-in {
+            width: 100%;
+            padding: 10px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .links-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .links-section a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        .admin-link {
+            margin-top: 15px;
+        }
+        .admin-link a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+<div class="mobile-container">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark</button>
+
+    <div class="logo-area">
+        <h2>RegIT Assist</h2>
+    </div>
+
+    <div class="login-card">
+        <h3>STAFF LOGIN</h3>
+        <form method="POST">
+            {% csrf_token %}
+            
+            <!-- Error message display if login credentials are wrong -->
+            {% if error %}
+                <p style="color: #ef4444; font-size: 12px; margin-bottom: 12px; text-align: left; font-weight: bold;">{{ error }}</p>
+            {% endif %}
+
+            <div class="input-group">
+                <label>Username / Staff ID</label>
+                <div class="input-wrapper">
+                    <input type="text" name="username" placeholder="Enter username" required>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <input type="password" name="password" id="passwordField" placeholder="••••••••" required>
+                    <button type="button" class="toggle-password" onclick="togglePasswordVisibility()">👁️</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-sign-in">SIGN IN</button>
+        </form>
+    </div>
+
+    <div class="links-section">
+        <div>
+            IT intern, NSS? <br>
+            <a href="{% url 'intern_login' %}"><b>Click here</b></a>
+        </div>
+        <div>
+            <a href="{% url 'report_problem' %}"><b>Report a problem</b></a>
+        </div>
+    </div>
+
+    <div class="admin-link">
+        <a href="{% url 'admin_login' %}">Admin portal</a>
+    </div>
+</div>
+
+<script>
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('passwordField');
+        passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+    }
+    function toggleTheme() {
+        const body = document.body;
+        const themeButton = document.querySelector('.theme-toggle');
+        if (body.getAttribute('data-theme') === 'light') {
+            body.setAttribute('data-theme', 'dark');
+            themeButton.textContent = '☀️ Light';
+        } else {
+            body.setAttribute('data-theme', 'light');
+            themeButton.textContent = '🌙 Dark';
+        }
+    }
+</script>
+</body>
+</html>

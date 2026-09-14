@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RegIT Assist - Report a Problem</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .mobile-container {
+            width: 100%;
+            max-width: 400px;
+            background: #ffffff;
+            padding: 14px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: 95vh;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        .header h2 {
+            color: #0284c7;
+            margin: 0;
+            font-size: 14px;
+        }
+        .back-btn {
+            background: none;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            font-size: 10px;
+            padding: 3px 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .dashboard-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-right: 2px;
+        }
+        .card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .section-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #0284c7;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .report-form {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .form-group label {
+            font-size: 10px;
+            font-weight: bold;
+            color: #334155;
+        }
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            padding: 7px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-size: 11px;
+            outline: none;
+            background: #ffffff;
+            color: #0f172a;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .form-group select option {
+            background: #ffffff;
+            color: #0f172a;
+        }
+        .form-group textarea {
+            resize: none;
+            height: 60px;
+        }
+        .file-upload-box {
+            border: 1px dashed #cbd5e1;
+            background: #ffffff;
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 10px;
+            color: #64748b;
+        }
+        .file-upload-box:hover {
+            border-color: #0284c7;
+            color: #0284c7;
+        }
+        .submit-btn {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+        .submit-btn:hover {
+            background: #0369a1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="mobile-container">
+    <!-- Header -->
+    <div class="header">
+        <h2>⚠️ Report an IT Issue</h2>
+        <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back</a>
+    </div>
+
+    <!-- Scrollable Content -->
+    <div class="dashboard-content">
+        
+        <div class="card">
+            <div class="section-title"><span>📝 Incident Logging Form</span></div>
+            <p style="font-size: 10px; color: #64748b; margin-top: 0; margin-bottom: 8px;">
+                Submit network, hardware, or software faults directly to the ECG Regional IT Desk.
+            </p>
+
+            <!-- action attribute removed so it correctly posts to report_problem_view -->
+            <form method="POST" enctype="multipart/form-data" class="report-form">
+                
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="reporter_name" placeholder="e.g. Kweku Sakyi-Aidoo" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Staff ID</label>
+                    <input type="text" name="staff_id" placeholder="e.g. ECG/KMS/2204" required>
+                </div>
+
+                <div class="form-group">
+                    <label>ECG Corporate Email</label>
+                    <input type="email" name="corporate_email" placeholder="username@ecggh.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label>District / Operational Area</label>
+                    <select name="district" required>
+                        <option value="" disabled selected>Select District</option>
+                        <option value="Kumasi East">Kumasi East District</option>
+                        <option value="Kumasi West">Kumasi West District</option>
+                        <option value="Kumasi Central">Kumasi Central District</option>
+                        <option value="Subin">Subin District</option>
+                        <option value="Asawase">Asawase District</option>
+                        <option value="Cape Coast">Cape Coast District</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Department</label>
+                    <select name="department" required>
+                        <option value="" disabled selected>Select Department</option>
+                        <option value="Accounts">Accounts & Finance</option>
+                        <option value="Commercial">Commercial Services</option>
+                        <option value="Network">Network & Systems</option>
+                        <option value="Customer Care">Customer Care Desk</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Issue Category</label>
+                    <select name="category" required>
+                        <option value="" disabled selected>Select Fault Type</option>
+                        <option value="Printer">Printer / Hardware Malfunction</option>
+                        <option value="Network">Internet / Local Network Down</option>
+                        <option value="Billing">Billing Software Error</option>
+                        <option value="Other">Other IT Support Request</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Description of Problem</label>
+                    <textarea name="description" placeholder="Describe error codes or symptoms..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Attach Screenshot / Error Log (Optional)</label>
+                    <input type="file" name="attachment" id="fileInput" accept="image/*" style="display: none;" onchange="showFileName(this)">
+                    <div class="file-upload-box" onclick="document.getElementById('fileInput').click()">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> <span id="fileLabel">Click to upload image</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn"><i class="fa-solid fa-paper-plane"></i> Submit Ticket</button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function showFileName(input) {
+        const label = document.getElementById('fileLabel');
+        if (input.files && input.files[0]) {
+            label.textContent = `Attached: ${input.files[0].name}`;
+            label.style.color = '#0284c7';
+            label.style.fontWeight = 'bold';
+        }
+    }
+</script>
+
+</body>
+</html>
