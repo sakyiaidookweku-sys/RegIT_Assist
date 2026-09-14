@@ -718,43 +718,41 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function getBotResponse(input) {
-        const text = input.toLowerCase();
-        if (text.includes('printer') || text.includes('print') || text.includes('driver')) {
-            return "For printer issues: 1. Ensure you are connected to the office local network. 2. Restart the Print Spooler service or re-add the network IP printer. If it persists, escalate to an IT intern.";
-        } else if (text.includes('software') || text.includes('install') || text.includes('app') || text.includes('license')) {
-            return "For software & licensing issues: Ensure you have admin rights or contact support to authenticate. Check available storage space.";
-        } else if (text.includes('wifi') || text.includes('network') || text.includes('internet') || text.includes('vpn')) {
-            return "For network/VPN issues: Toggle your adapter or run 'ipconfig /flushdns' in your command prompt. Contact network admins if the gateway drops.";
-        } else if (text.includes('email') || text.includes('outlook')) {
-            return "For Outlook email syncing: Verify your credentials, check server settings, or clear your cached Exchange credentials.";
+    async function getBotResponse(input) {
+    try {
+        const response = await fetch('/api/chat/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({ 'message': input })
+        });
+
+        const data = await response.json();
+
+        if (data.reply) {
+            return data.reply;
         } else {
-            return "I've noted your request. If you need hands-on technical assistance, remember you can submit an official ticket via the 'Report a problem' option in the side menu!";
+            return "Error: " + (data.error || "Could not retrieve response from AI.");
         }
+    } catch (error) {
+        return "Network error. Please try again.";
     }
+}
+   async function sendMessage() {
+    const text = userInput.value.trim();
+    if (text === '' && !attachedImageSrc) return;
 
-    function sendMessage() {
-        const text = userInput.value.trim();
-        if (text === '' && !attachedImageSrc) return;
+    const displayText = text !== '' ? text : "Uploaded problem screenshot";
+    appendMessage(displayText, 'user', attachedImageSrc);
 
-        const displayText = text !== '' ? text : "Uploaded problem screenshot";
-        const topicLabel = text.length > 28 ? text.substring(0, 28) + '...' : displayText;
+    // Clear input
+    userInput.value = '';
 
-        appendMessage(displayText, 'user', attachedImageSrc);
-        registerOrUpdateSession(topicLabel);
-        
-        userInput.value = '';
-        userInput.placeholder = "Ask me anything ECG related about software...";
-        attachedImageSrc = null;
-        document.getElementById('imageInput').value = '';
-        filterPredictions();
-
-        setTimeout(() => {
-            const reply = getBotResponse(displayText);
-            appendMessage(reply, 'bot');
-            registerOrUpdateSession(topicLabel);
-        }, 500);
-    }
+    // Fetch AI response
+    const botReply = await getBotResponse(displayText);
+    appendMessage(botReply, 'bot');
+}
 
     function sendQuickPrompt(promptText) {
         userInput.value = promptText;

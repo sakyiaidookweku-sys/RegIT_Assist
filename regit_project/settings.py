@@ -166,3 +166,8 @@ STORAGES = {
 # Override database dynamically if DATABASE_URL environment variable is provided in hosting platform
 if config('DATABASE_URL', default=None):
     DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+
+# ==========================================
+# CHATBOT API CONFIGURATION
+# ==========================================
+GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
