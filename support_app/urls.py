@@ -36,5 +36,5 @@ urlpatterns = [
     path('admin/tickets/export/', views.export_tickets_csv, name='export_tickets_csv'),
 
     # Gemini AI Chatbot API Endpoint
-    path('api/chat/', views.chatbot_api, name='chatbot_api'),
+    path('api/chat/', views.chat_api, name='chat_api'), # Changed from chatbot_api to chat_api
 ]
