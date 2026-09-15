@@ -1,11 +1,14 @@
 import csv
+import os
+from google import genai
+from google.genai import types
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.mail import send_mail
 from .models import Ticket
 
@@ -249,10 +252,7 @@ def export_tickets_csv(request):
 
     return response
 
-import os
-from google import genai
-from django.http import JsonResponse
-
+# Chat API View with Strict IT System Instructions
 def chat_api(request):
     if request.method == "POST":
         api_key = os.environ.get("GEMINI_API_KEY")
@@ -266,10 +266,22 @@ def chat_api(request):
         try:
             client = genai.Client(api_key=api_key)
             
-            # Use a standard Gemini Flash model identifier
+            # Strict system instruction limiting responses to IT/software/hardware/network support
+            system_prompt = (
+                "You are RegIT Assistant, an expert AI IT support specialist. "
+                "Your role is strictly limited to helping staff and interns with software errors, "
+                "hardware troubleshooting, network/Wi-Fi configurations, printer connectivity, and email setups. "
+                "You must strictly decline to answer any questions unrelated to IT or technical support, "
+                "and politely guide the user back to technical troubleshooting or submitting an official ticket."
+            )
+            
             response = client.models.generate_content(
                 model="gemini-1.5-flash",
                 contents=user_message,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_prompt,
+                    temperature=0.2,
+                ),
             )
             
             return JsonResponse({"reply": response.text})
