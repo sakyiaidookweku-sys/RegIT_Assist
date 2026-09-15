@@ -253,6 +253,7 @@ def export_tickets_csv(request):
     return response
 
 # Chat API View with Strict IT System Instructions
+@csrf_exempt
 def chat_api(request):
     if request.method == "POST":
         api_key = os.environ.get("GEMINI_API_KEY")
